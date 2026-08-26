@@ -211,14 +211,6 @@
             ctx.fillStyle = rand() > 0.5 ? '#fff' : '#000';
             ctx.fillRect(x, y, 2, 2);
         }
-        // rolling tracking band
-        const roll = STATE.rollPhase % (H + 120);
-        const rg = ctx.createLinearGradient(0, roll, 0, roll + 90);
-        rg.addColorStop(0, 'rgba(0,0,0,0)');
-        rg.addColorStop(0.5, 'rgba(120,160,200,0.22)');
-        rg.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = rg;
-        ctx.fillRect(0, roll - 60, W, 90);
         ctx.globalAlpha = 1;
     }
 
@@ -379,6 +371,26 @@
         } else {
             // local / embed media handled by injected DOM (see below)
             drawBlue();
+        }
+
+        // real VHS tracking band: snow that rolls with a gentle wobble and,
+        // on drag, snaps back to the wheel center like a physical VCR capstan.
+        const bandY = (0.5 + locked) * H;
+        const bandHeight = clamp(90 + Math.abs(locked) * 160, 90, 250);
+        const rollJitter = (rand() - 0.5) * (16 + Math.abs(locked) * 40);
+        const rg = ctx.createLinearGradient(0, bandY - bandHeight, 0, bandY + bandHeight);
+        rg.addColorStop(0, 'rgba(0,0,0,0)');
+        rg.addColorStop(0.35, `rgba(130,170,210,${0.10 + Math.abs(locked) * 0.28})`);
+        rg.addColorStop(0.5, `rgba(170,200,240,${0.20 + Math.abs(locked) * 0.45})`);
+        rg.addColorStop(0.65, `rgba(130,170,210,${0.10 + Math.abs(locked) * 0.28})`);
+        rg.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = rg;
+        ctx.fillRect(0, bandY + rollJitter - bandHeight, W, bandHeight * 2);
+        for (let i = 0; i < 120 + Math.abs(locked) * 300; i++) {
+            const sy = bandY + (rand() - 0.5) * bandHeight + rollJitter;
+            const sx = rand() * W;
+            ctx.fillStyle = rand() > 0.5 ? '#fff' : '#000';
+            ctx.fillRect(sx, sy, 2, 2);
         }
 
         if (Math.abs(locked) > 0.001) drawTrackingWobble();

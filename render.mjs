@@ -17,7 +17,8 @@ const dest = flag('--out');
 const waitMs = parseInt(flag('--wait-ms') || '0', 10);
 
 const fileServer = http.createServer((req, res) => {
-    const f = req.url === '/' ? 'crt-tv.html' : req.url.split('?')[0];
+    const clean = req.url.split('?')[0].replace(/^\/+/, '');
+    const f = clean === '' ? 'crt-tv.html' : clean;
     const rel = path.resolve(__dirname, f);
     if (rel.startsWith(__dirname) && fs.existsSync(rel)) {
         res.setHeader('Content-Type', rel.endsWith('.js') ? 'text/javascript' : 'text/html');
