@@ -1,0 +1,16 @@
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local dev scratch (regenerable via render.mjs / diag.mjs / probe.mjs)
+*.local
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Secrets / credentials
+.env
+.env.*
+!.env.example

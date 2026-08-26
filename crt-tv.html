@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CRT VCR TV</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        :root {
+            --vcr-green: #57ff8f;
+            --vcr-cyan: #4fe3ff;
+            --vcr-amber: #ffb24d;
+            --vcr-red: #ff4d4d;
+            --tv-blue: #0a4d8f;
+            --tv-bright: #7fd0ff;
+
+            /* VCR OSD Mono (embedded via @font-face when available) -> VT323 web fallback -> monospace */
+            --vcr-font: "VT323", "VCR OSD Mono", "Consolas", "Courier New", monospace;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+            font-family: 'VT323', 'VCR OSD Mono', 'Consolas', 'Courier New', monospace;
+        }
+        /* The physical TV bezel + screen sit in a fixed box centered in the source */
+        #tv {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #05060a;
+        }
+        #bezel {
+            position: relative;
+            width: 92vw;
+            height: 90vh;
+            max-width: 1720px;
+            max-height: 760px;
+            padding: 4.5vw 4.5vh;
+            border-radius: 26px;
+            background:
+                radial-gradient(120% 120% at 50% 40%, #2a2c34 0%, #17181d 55%, #0c0d11 100%);
+            box-shadow:
+                inset 0 0 3px rgba(0,0,0,0.9),
+                0 0 40px rgba(0,0,0,0.8),
+                0 22px 60px rgba(0,0,0,0.6);
+        }
+        /* inner rounded screen well */
+        #well {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 14px;
+            background: #010309;
+            overflow: hidden;
+            box-shadow:
+                inset 0 0 60px 14px rgba(0,0,0,0.95),
+                inset 0 0 4px rgba(30,80,160,0.4);
+        }
+        #screen {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        /* CRT glass curvature + curvature of the scanline glow handled in canvas;
+           these overlays add the final vignette and a faint reflection */
+        #vignette {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(78% 78% at 50% 48%, transparent 55%, rgba(0,0,0,0.62) 100%);
+            mix-blend-mode: multiply;
+        }
+        #reflection {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(45% 30% at 38% 18%, rgba(255,255,255,0.10), transparent 60%);
+        }
+        /* speaker + brand grilles for realism */
+        .grille {
+            position: absolute;
+            bottom: 1.6vh;
+            height: 2.2vh;
+            width: 14vw;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            opacity: 0.5;
+        }
+        .grille.l { left: 4.5vw; }
+        .grille.r { right: 4.5vw; }
+        .grille span {
+            flex: 1;
+            height: 2px;
+            background: #000;
+            border-radius: 2px;
+        }
+
+        /* channel-swap white flash overlay */
+        #flash {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+        #flash.on { animation: flash 130ms ease-out; }
+        @keyframes flash {
+            0% { opacity: 0.9; }
+            100% { opacity: 0; }
+        }
+
+        /* friend-channel grid menu (shown over the well) */
+        #grid {
+            position: absolute;
+            inset: 0;
+            z-index: 15;
+            display: none;
+            padding: 4%;
+            grid-template-columns: repeat(auto-fill, minmax(22%, 1fr));
+            gap: 2.5%;
+            align-content: start;
+            background: rgba(0,0,0,0.35);
+            overflow-y: auto;
+        }
+        #grid.show { display: grid; }
+        .tile {
+            position: relative;
+            border: 2px solid rgba(90,200,255,0.55);
+            border-radius: 8px;
+            background: rgba(6,20,40,0.7);
+            padding: 9% 6% 6%;
+            cursor: pointer;
+            color: #bfe6ff;
+            font-family: 'VT323', 'VCR OSD Mono', 'Consolas', monospace;
+            text-align: left;
+            transition: background 120ms ease, transform 80ms ease;
+        }
+        .tile:hover, .tile:focus-visible {
+            background: rgba(20,60,110,0.9);
+            transform: scale(1.03);
+            outline: none;
+        }
+        .tile .name { font-size: 3.2vh; font-weight: bold; color: #7fd0ff; }
+        .tile .handle { font-size: 2vh; opacity: 0.75; margin-top: 2%; }
+        .tile .status {
+            position: absolute;
+            top: 4%;
+            right: 5%;
+            font-size: 1.8vh;
+            letter-spacing: 1px;
+        }
+        .tile .status.live { color: #57ff8f; }
+        .tile .status.offline { color: #ff6b6b; }
+        .tile .status .dot {
+            display: inline-block;
+            width: 1.2vh; height: 1.2vh;
+            margin-right: 1.5%;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+        .tile .status.live .dot { background: #57ff8f; box-shadow: 0 0 6px #57ff8f; }
+        .tile .status.offline .dot { background: #ff6b6b; }
+        .tile .tag {
+            position: absolute;
+            bottom: 4%;
+            left: 6%;
+            font-size: 1.8vh;
+            color: #ffb24d;
+        }
+    </style>
+</head>
+<body>
+    <div id="tv">
+        <div id="bezel">
+            <div id="well">
+                <canvas id="screen"></canvas>
+                <div id="grid"></div>
+                <div id="flash"></div>
+                <div id="vignette"></div>
+                <div id="reflection"></div>
+            </div>
+            <div class="grille l"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="grille r"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+    </div>
+    <script src="crt-tv.js"></script>
+</body>
+</html>
