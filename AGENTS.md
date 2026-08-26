@@ -23,8 +23,9 @@ real CRT/VHS TV and grows into an interactive "Friends Channels" hub.
 | `baseline_fontswap.png` | Font-swap visual reference |
 
 ## Current state
-- Phase 1 done; Phase 4 (Friends Channels hub) done; **Phase 2 (deepen authenticity) is NEXT**.
-- Recommended next step: `DESIGN.md` Phase 2 item 1 — **font swap to VCR OSD Mono**.
+- Phase 1 done; Phase 4 (Friends Channels hub) done; **Phase 2 (deepen authenticity) in progress**
+  (item 1 = VCR OSD Mono font swap, done; remaining items open).
+- Recommended next step: `DESIGN.md` Phase 2 item 2 — **real VHS tracking band (snow wobble + snap-back)**.
 
 ## How to verify changes
 - **Syntax check:** `node --check crt-tv.js`

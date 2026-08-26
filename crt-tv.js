@@ -178,7 +178,7 @@
         ctx.fillRect(0, H * 0.30, W, H * 0.16);
         ctx.fillStyle = '#e8e8e8';
         ctx.textBaseline = 'middle';
-        ctx.font = 'bold 26px "VT323", "VCR OSD Mono", Consolas, monospace';
+        ctx.font = 'bold 26px "VCR OSD Mono", "VT323", Consolas, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('TECHNICAL DIFFICULTIES', W / 2, H * 0.38);
         ctx.textAlign = 'left';
@@ -262,7 +262,7 @@
 
         // channel number
         ctx.textBaseline = 'top';
-        ctx.font = 'bold 22px "VT323", "VCR OSD Mono", Consolas, monospace';
+        ctx.font = 'bold 22px "VCR OSD Mono", "VT323", Consolas, monospace';
         ctx.fillStyle = 'rgba(79,227,255,0.95)';
         ctx.textAlign = 'left';
         ctx.fillText('CH ' + CH_LABELS[channelIndex % CH_LABELS.length], 26, 22);
@@ -271,13 +271,13 @@
         ctx.textAlign = 'right';
         ctx.fillStyle = live ? 'rgba(87,255,143,0.95)' : 'rgba(255,110,110,0.9)';
         ctx.fillText(c.name, W - 26, 20);
-        ctx.font = '16px "VT323", "VCR OSD Mono", Consolas, monospace';
+        ctx.font = '16px "VCR OSD Mono", "VT323", Consolas, monospace';
         ctx.fillStyle = 'rgba(255,255,255,0.6)';
         ctx.fillText(c.handle, W - 26, 46);
 
         // status dot
         ctx.textAlign = 'left';
-        ctx.font = 'bold 18px "VT323", "VCR OSD Mono", Consolas, monospace';
+        ctx.font = 'bold 18px "VCR OSD Mono", "VT323", Consolas, monospace';
         if (live) {
             ctx.fillStyle = 'rgba(87,255,143,0.95)';
             ctx.fillText('\u25CF LIVE', 26, H - 44);
@@ -288,7 +288,7 @@
 
         // channel hint
         ctx.textAlign = 'center';
-        ctx.font = '14px "VT323", "VCR OSD Mono", Consolas, monospace';
+        ctx.font = '14px "VCR OSD Mono", "VT323", Consolas, monospace';
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
         ctx.fillText('\u2191 \u2193 tune   \u23CE menu', W / 2, H - 20);
     }

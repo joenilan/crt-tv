@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>CRT VCR TV</title>
     <style>
+        /* Self-hosted VCR OSD Mono (see fonts/). Keeps the widget offline-capable
+           with no Google Fonts / CDN dependency for the primary OSD font. */
+        @font-face {
+            font-family: 'VCR OSD Mono';
+            src: url('./fonts/VCR_OSD_MONO_1.001.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
         :root {
@@ -14,8 +24,8 @@
             --tv-blue: #0a4d8f;
             --tv-bright: #7fd0ff;
 
-            /* VCR OSD Mono (embedded via @font-face when available) -> VT323 web fallback -> monospace */
-            --vcr-font: "VT323", "VCR OSD Mono", "Consolas", "Courier New", monospace;
+            /* VCR OSD Mono (self-hosted @font-face, see fonts/) -> VT323 web fallback -> monospace */
+            --vcr-font: "VCR OSD Mono", "VT323", "Consolas", "Courier New", monospace;
         }
         html, body {
             margin: 0;
@@ -24,7 +34,7 @@
             height: 100vh;
             overflow: hidden;
             background: #000;
-            font-family: 'VT323', 'VCR OSD Mono', 'Consolas', 'Courier New', monospace;
+            font-family: 'VCR OSD Mono', 'VT323', 'Consolas', 'Courier New', monospace;
         }
         /* The physical TV bezel + screen sit in a fixed box centered in the source */
         #tv {
@@ -141,7 +151,7 @@
             padding: 9% 6% 6%;
             cursor: pointer;
             color: #bfe6ff;
-            font-family: 'VT323', 'VCR OSD Mono', 'Consolas', monospace;
+            font-family: 'VCR OSD Mono', 'VT323', 'Consolas', monospace;
             text-align: left;
             transition: background 120ms ease, transform 80ms ease;
         }
