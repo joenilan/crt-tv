@@ -35,7 +35,8 @@
 | File | Purpose |
 |------|---------|
 | `crt-tv.html` | Structure: bezel, well, screen canvas, grille, CSS vignette/reflection |
-| `crt-tv.js`   | Canvas renderer: blue screen, scanlines, roll/tracking, OSD, transport |
+| `glitches.js` | Modern-era glitch library (`window.__Glitches`): pixelate/datamash/tear/buffer/downshift + scheduler |
+| `crt-tv.js`   | Canvas renderer: blue screen, scanlines, roll/tracking, OSD, transport, glitch overlay, `CrtTV.transition` |
 | `_preview.png`| Playwright screenshot reference (do not commit as source of truth) |
 | `DESIGN.md`   | This doc |
 
@@ -64,13 +65,23 @@
 - [x] **Phosphor warm-up** (classic CRT convergence: thin bright vertical seam → opens up vertically into the blue screen, cool-white bloom core that fades to the warm blue glow)
 - [ ] **Audio-reactive** option (optional, OBS browser source mic capture is tricky — defer)
 
-### Phase 3 — Glitch Library (modern era)
-- [ ] Pixelation / macroblock block-pop
-- [ ] Bandwidth/network: buffering ring, `360p→1080p` resolution downshift, datamosh smear
-- [ ] Digital tear + glitch-art pops
-- [ ] A small `glitches.js` module + a `transition` API to trigger any glitch on cue
-- [ ] **Transition modes** for OBS: "turn on the TV" (black→blue→static→lock) and
-      "loss of signal" (reverse) for scene changes
+### Phase 3 — Glitch Library (modern era) — DONE (glitches.js)
+- [x] **`glitches.js`** — pure-canvas effects + scheduler on `window.__Glitches`
+      (`effects`, `DUR`, `play`, `advance`, `has`). Loaded **before** `crt-tv.js` in the HTML.
+      Effect signature: `(ctx, W, H, t) => void` where `t` = ms since effect start.
+- [x] **`pixelate`** — macroblock block-pop (shifting white/blue blocks flash/pop).
+- [x] **`datamash`** — horizontal band smear (`getImageData`/`putImageData`), hallmark datamosh.
+- [x] **`tear`** — digital tear: thin bands nudged sideways with `lighter` RGB split.
+- [x] **`buffer`** — spinning buffering ring + `● BUFFERING` tag (`DUR: 75` frames).
+- [x] **`downshift`** — 1080p→360p bandwidth drop: downsample to 160×90, nearest-neighbor
+      upscale + block seams + `LIVE 360P` tag.
+- [x] **`transition` API** in `crt-tv.js`:
+      - `CrtTV.transition('glitch')` = randomized cascade
+        `pixelate→datamash→tear→pixelate` (setTimeout steps).
+      - single kinds: `'buffer' | 'downshift' | 'pixelate' | 'datamash' | 'tear'`.
+- [x] **Frame loop:** checks `window.__Glitches.has()` after boot, before locked-channel
+      render; when armed, draws the effect + scanlines then returns.
+- [ ] **Transition modes** for OBS "turn on the TV" / "loss of signal" — see Phase 4/5.
 
 ### Phase 4 — Friends Channels Hub (THE BIG ONE)
 - [x] `friends.json` data model (seed list in `crt-tv.js` `CHANNELS` — see §4)
@@ -174,7 +185,12 @@ media → shows the Technical Difficulties color-bars screen. 100% offline-capab
 - **Demo channel list:** `CHANNELS` in `crt-tv.js` is inlined (no `friends.json` yet) with
   6 example streamers: `peeshaaaa` (blue), `itzdribz` (offline), `bessvibes` (blue),
   `sery_bot` (blue — used as the live test channel), `nightowl` (blue), `retrocat` (offline).
-- **Next step recommended:** **Phase 2, item 5** = audio-reactive option (deferred; OBS browser-source mic capture is tricky).
+- **Phase 3 (Glitch Library) done:** `glitches.js` defines `window.__Glitches` (effects
+  `pixelate|datamash|tear|buffer|downshift` + `play`/`advance`/`has` scheduler, durations in
+  frames) and `crt-tv.js` wires `CrtTV.transition('glitch')` (cascade) and single kinds
+  into the frame loop. Regenerate `renders/frame.png` with `node render.mjs`.
+- **Next step recommended:** **Phase 4 (Friends Channels hub)** — build the interactive
+  hub: channel-flip UI, per-tile LIVE/OFFLINE (media !== null), channel-swap FX.
 - Windows-only gotchas: use native `E:\` paths; background servers hang the Bash tool —
   use `Start-Process -PassThru` (or `Start-Process python ... -WindowStyle Hidden`)
   and kill by PID. `file://` and OBS browser source need an HTTP server.

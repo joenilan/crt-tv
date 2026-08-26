@@ -440,6 +440,19 @@
             return;
         }
 
+        // ---- Modern-era glitch overlay ---------------------------------
+        // A scheduled glitch (see glitches.js) overrides the screen for a few
+        // frames — pixelation, datamosh, digital tear, buffering ring, etc.
+        if (window.__Glitches && window.__Glitches.has()) {
+            const g = window.__CrtTV_glitch;
+            const eff = window.__Glitches.effects[g.kind];
+            if (eff) eff(ctx, W, H, performance.now() - g.t0);
+            drawScanlines();
+            if (!window.__Glitches.advance(performance.now())) window.__CrtTV_glitch = null;
+            requestAnimationFrame(frame);
+            return;
+        }
+
         // ---- Locked: normal channel rendering ------------------------------
         // integrate tracking spring back to center when not dragging
         if (!dragging) applyTracking(dt);
@@ -536,6 +549,13 @@
         // OBS browser-source JS trigger: CrtTV.transition('turnOn')
         // Signal-loss: TV off -> blue -> rolling snow -> dead static (scene change).
         // OBS browser-source JS trigger: CrtTV.transition('signalLoss')
+        //
+        // Modern-era glitches (see glitches.js):
+        //   CrtTV.transition('glitch')   // randomized block-pop + datamosh + digital tear burst
+        //   CrtTV.transition('buffer')   // buffering ring / -408 style cut
+        //   CrtTV.transition('downshift')// 1080p -> 360p bandwidth drop
+        //   CrtTV.transition('pixelate'|'datamash'|'tear')  // single effect
+        // OBS browser-source JS trigger: CrtTV.transition('glitch')
         transition(kind) {
             if (kind === 'turnOn') {
                 STATE.lossStarted = false;
@@ -548,6 +568,25 @@
                 STATE.lossStart = performance.now();
                 STATE.black = false;
                 tone(200, 0.2);            // signal-drop thud
+            } else if (kind === 'glitch' && window.__Glitches) {
+                // randomized modern-era burst: block-pop -> datamosh -> digital tear
+                const parts = [
+                    ['pixelate', window.__Glitches.DUR.pixelate],
+                    ['datamash', window.__Glitches.DUR.datamash],
+                    ['tear', window.__Glitches.DUR.tear],
+                    ['pixelate', Math.round(window.__Glitches.DUR.pixelate / 2)],
+                ];
+                let i = 0;
+                const step = () => {
+                    if (i >= parts.length) return;
+                    const [k, f] = parts[i++];
+                    window.__Glitches.play(k, f);
+                    setTimeout(step, f * 16 + 16);
+                };
+                step();
+            } else if (window.__Glitches && kind in window.__Glitches.effects) {
+                // direct single glitch kinds
+                window.__Glitches.play(kind, window.__Glitches.DUR[kind]);
             }
             return { lossStarted: STATE.lossStarted, black: STATE.black };
         },

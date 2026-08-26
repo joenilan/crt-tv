@@ -18,15 +18,18 @@ real CRT/VHS TV and grows into an interactive "Friends Channels" hub.
 | `crt-tv.html` | Structure: bezel, well, screen canvas, grille, vignette/reflection CSS |
 | `crt-tv.js` | Canvas renderer: blue screen, scanlines, roll/tracking, OSD, transport |
 | `render.mjs` | Playwright render -> `renders/` (starts a local HTTP server, takes a screenshot) |
-| `diag.mjs` / `probe.mjs` | Diagnostic probes |
+| `glitches.js` | Modern-era glitch library (`window.__Glitches`): pixelate/datamash/tear/buffer/downshift + scheduler |
+| `diag.mjs` | Diagnostic probe |
 | `renders/` | Generated screenshot references (regenerate, do not hand-edit) |
 | `baseline_fontswap.png` | Font-swap visual reference |
 
 ## Current state
-- Phase 1 done; Phase 4 (Friends Channels hub) done; **Phase 2 (deepen authenticity) in progress**
-  (item 1 = VCR OSD Mono font swap, done; item 2 = VHS tracking band, done; item 3 = signal-loss sequence, done; item 4 = phosphor warm-up, done; item 5 open).
-  - Demo channel list inlined in `crt-tv.js` `CHANNELS` (no `friends.json` yet): peeshaaaa, itzdribz, bessvibes, sery_bot (blue, live test), nightowl (blue), retrocat.
-- Recommended next step: `DESIGN.md` Phase 2 item 5 — **audio-reactive option** (deferred).
+- Phase 1 done; Phase 2 (deepen authenticity) done (item 1 font swap, item 2 VHS tracking band,
+   item 3 signal-loss sequence, item 4 phosphor warm-up done; item 5 audio-reactive deferred).
+   **Phase 3 (Glitch Library) done** — `glitches.js` + `CrtTV.transition` glitch kinds wired.
+- Phase 4 (Friends Channels hub) — **not yet started** (see `DESIGN.md`).
+   - Demo channel list inlined in `crt-tv.js` `CHANNELS` (no `friends.json` yet): peeshaaaa, itzdribz, bessvibes, sery_bot (blue, live test), nightowl (blue), retrocat.
+   - Recommended next step: `DESIGN.md` Phase 4 = Friends Channels hub.
 
 ## How to verify changes
 - **Syntax check:** `node --check crt-tv.js`
