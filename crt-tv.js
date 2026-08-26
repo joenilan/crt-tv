@@ -36,12 +36,12 @@
     //   media = { type: 'local', src } -> LIVE, local mp4/webm (Phase 5)
     //   media = { type: 'embed', url }  -> LIVE, remote iframe (Phase 5)
     const CHANNELS = [
-        { id: 'nightbot',  name: 'NightBot',  handle: '@nightbot',  media: { type: 'blue' } },
-        { id: 'friend2',   name: 'friend2',   handle: '@friend2',   media: null },
-        { id: 'friend3',   name: 'friend3',   handle: '@friend3',   media: { type: 'blue' } },
-        { id: 'friend4',   name: 'friend4',   handle: '@friend4',   media: null },
-        { id: 'local:clip', name: 'CLIP_01',  handle: 'local',      media: null },
-        { id: 'satellite', name: 'SATELLITE', handle: 'SAT',        media: null },
+        { id: 'peeshaaaa',   name: 'peeshaaaa',   handle: '@peeshaaaa',   media: { type: 'blue' } },
+        { id: 'itzdribz',    name: 'itzdribz',    handle: '@itzdribz',    media: null },
+        { id: 'bessvibes',   name: 'bessvibes',   handle: '@bessvibes',   media: { type: 'blue' } },
+        { id: 'sery_bot',    name: 'sery_bot',    handle: '@sery_bot',    media: { type: 'blue' } },
+        { id: 'nightowl',    name: 'nightowl',    handle: '@nightowl',    media: { type: 'blue' } },
+        { id: 'retrocat',    name: 'retrocat',    handle: '@retrocat',    media: null },
     ];
 
     const CH_LABELS = ['03', '07', '13', '22', '42', '66'];
@@ -56,6 +56,10 @@
         // Turn-on boot: phosphor warm-up -> analog static -> lock
         bootStarted: false,
         bootStart: 0,
+        // Signal-loss: TV off -> blue -> rolling snow -> dead static -> black
+        lossStarted: false,
+        lossStart: 0,
+        black: false,
     };
 
     // ---- Pre-render noise texture ---------------------------------------
@@ -203,6 +207,42 @@
         ctx.fillRect(0, 0, W, H);
     }
 
+    // ---- Signal-loss sequence renderers ----------------------------------
+    // The classic analog "no signal" ramp: solid blue -> rolling snow band
+    // -> full dead static -> black (TV off).
+    function drawBlueScreen() {
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, '#0d6bd8');
+        g.addColorStop(1, '#083a78');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
+        ctx.fillRect(0, H * 0.5, W, 1);
+    }
+
+    function drawRollingSnow(elapsed) {
+        const roll = (elapsed * 0.15) % (H + 140);
+        const rg = ctx.createLinearGradient(0, roll - 70, 0, roll + 70);
+        rg.addColorStop(0, 'rgba(0,0,0,0)');
+        rg.addColorStop(0.5, 'rgba(140,180,220,0.40)');
+        rg.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = rg;
+        ctx.fillRect(0, roll - 70, W, 140);
+        for (let i = 0; i < 160; i++) {
+            ctx.fillStyle = rand() > 0.5 ? '#fff' : '#000';
+            ctx.fillRect(rand() * W, roll + (rand() - 0.5) * 140, 2, 2);
+        }
+    }
+
+    function drawDeadStatic(amount) {
+        ctx.globalAlpha = amount;
+        for (let i = 0; i < 2600; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? '#fff' : '#000';
+            ctx.fillRect(rand() * W, rand() * H, 2, 2);
+        }
+        ctx.globalAlpha = 1;
+    }
+
     // ---- Static / tracking gap -------------------------------------------
     function drawStatic(amount) {
         ctx.globalAlpha = amount;
@@ -332,6 +372,30 @@
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, W, H);
 
+        // ---- Signal-loss sequence: TV off -> blue -> rolling snow -> dead static
+        if (STATE.lossStarted) {
+            const elapsed = performance.now() - STATE.lossStart;
+            const BLUE_MS = 850, ROLL_MS = 1000, STATIC_MS = 950;
+            if (elapsed < BLUE_MS) {
+                drawBlueScreen();
+                drawScanlines();
+            } else if (elapsed < BLUE_MS + ROLL_MS) {
+                drawBlueScreen();
+                drawRollingSnow(elapsed - BLUE_MS);
+                drawScanlines();
+            } else if (elapsed < BLUE_MS + ROLL_MS + STATIC_MS) {
+                drawRollingSnow(elapsed - BLUE_MS - ROLL_MS);
+                drawDeadStatic((elapsed - BLUE_MS - ROLL_MS) / STATIC_MS);
+                drawScanlines();
+            } else if (!STATE.black) {
+                drawDeadStatic(1);
+                drawScanlines();
+            } else {
+                STATE.black = true; // TV off; loop stops
+            }
+            return;
+        }
+
         // ---- Turn-on sequence: phosphor warm-up -> analog static -> lock --
         if (!STATE.bootStarted) {
             STATE.bootStart = performance.now();
@@ -447,11 +511,22 @@
         goUp, goDown, toggleGrid, swapChannel,
         // Replays the CRT turn-on: phosphor warm-up -> analog static -> lock.
         // OBS browser-source JS trigger: CrtTV.transition('turnOn')
+        // Signal-loss: TV off -> blue -> rolling snow -> dead static (scene change).
+        // OBS browser-source JS trigger: CrtTV.transition('signalLoss')
         transition(kind) {
             if (kind === 'turnOn') {
+                STATE.lossStarted = false;
+                STATE.black = false;
                 STATE.bootStarted = false; // re-arm the boot sequence
                 tone(500, 0.15);           // power-on click
+            } else if (kind === 'signalLoss') {
+                STATE.bootStarted = false;
+                STATE.lossStarted = true;
+                STATE.lossStart = performance.now();
+                STATE.black = false;
+                tone(200, 0.2);            // signal-drop thud
             }
+            return { lossStarted: STATE.lossStarted, black: STATE.black };
         },
     };
 })();
