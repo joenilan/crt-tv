@@ -24,8 +24,8 @@ real CRT/VHS TV and grows into an interactive "Friends Channels" hub.
 
 ## Current state
 - Phase 1 done; Phase 4 (Friends Channels hub) done; **Phase 2 (deepen authenticity) in progress**
-  (item 1 = VCR OSD Mono font swap, done; remaining items open).
-- Recommended next step: `DESIGN.md` Phase 2 item 2 — **real VHS tracking band (snow wobble + snap-back)**.
+  (item 1 = VCR OSD Mono font swap, done; item 2 = VHS tracking band, done; items 3-5 open).
+- Recommended next step: `DESIGN.md` Phase 2 item 3 — **signal-loss sequence (TV off → blue → rolling snow → dead static)**.
 
 ## How to verify changes
 - **Syntax check:** `node --check crt-tv.js`

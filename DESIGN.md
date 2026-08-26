@@ -59,7 +59,7 @@
 
 ### Phase 2 — Deepen Authenticity (NEXT)
 - [x] **Font swap** to `VCR OSD Mono` (self-hosted `@font-face` in `fonts/`, `VT323` web fallback)
-- [ ] VHS **tracking band** becomes a real wobble + snow column that snaps back on drag
+- [x] VHS **tracking band** becomes a real wobble + snow column that snaps back on drag
 - [ ] **Signal-loss sequence** (TV off → blue → rolling snow → dead static)
 - [ ] **Phosphor warm-up** fade-in on load
 - [ ] **Audio-reactive** option (optional, OBS browser source mic capture is tricky — defer)
