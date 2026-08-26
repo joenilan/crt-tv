@@ -192,19 +192,42 @@
     drawColorBars._tone = false;
 
     // ---- Phosphor warm-up (CRT turn-on) ----------------------------------
-    // Screen lights up from a faint vertical glow — the classic CRT boot glow.
+    // The electron beam starts as a thin bright horizontal line at center, then
+    // "opens up" vertically into the screen (the classic convergence pop), with
+    // a cool-white bloom core that fades to the warm blue glow.
     function drawWarmup(frac) {
         const e = clamp(frac, 0, 1);
-        const grow = Math.min(1, e * 1.7); // expands vertically then fills
-        const top = (1 - grow) * H * 0.5;
-        const bot = H - (1 - grow) * H * 0.5;
-        const g = ctx.createLinearGradient(0, top, 0, bot);
-        const a = e * e * 0.92; // ease-in
-        g.addColorStop(0, `rgba(24,104,190,${a})`);
-        g.addColorStop(0.5, `rgba(12,74,144,${a})`);
-        g.addColorStop(1, `rgba(6,40,80,${a})`);
+        // vertical aperture: thin line -> full height (fast early pop, settle)
+        const open = clamp(Math.pow(e, 1.5) * 2.4, 0, 1);
+        const halfH = (open * H) / 2;
+        const cy = H / 2;
+        // cool-white core/bloom: brightest at t=0, gone once warmed
+        const core = clamp(1 - e * 2.6, 0, 1);
+        const a = clamp(e * 2.0, 0, 1); // overall fill opacity ramp
+        // bloom halo behind the opening band (additive)
+        if (core > 0.01) {
+            ctx.globalCompositeOperation = 'lighter';
+            const bloom = ctx.createLinearGradient(0, cy - halfH - 18, 0, cy + halfH + 18);
+            bloom.addColorStop(0, 'rgba(120,190,255,0)');
+            bloom.addColorStop(0.5, `rgba(190,232,255,${core * 0.55 * a})`);
+            bloom.addColorStop(1, 'rgba(120,190,255,0)');
+            ctx.fillStyle = bloom;
+            ctx.fillRect(0, cy - halfH - 22, W, halfH * 2 + 44);
+            ctx.globalCompositeOperation = 'source-over';
+        }
+        // the filling blue gradient within the opening band
+        const g = ctx.createLinearGradient(0, cy - halfH, 0, cy + halfH);
+        g.addColorStop(0, `rgba(16,82,158,${a})`);
+        g.addColorStop(0.5, `rgba(10,60,122,${a})`);
+        g.addColorStop(1, `rgba(6,40,92,${a})`);
         ctx.fillStyle = g;
-        ctx.fillRect(0, 0, W, H);
+        ctx.fillRect(0, cy - halfH, W, halfH * 2);
+        // bright scanning seam where the beam opens (with slight RGB split)
+        const seamY = cy + (rand() - 0.5) * 2;
+        ctx.fillStyle = `rgba(180,220,255,${core * 0.9 * a})`;
+        ctx.fillRect(-2, seamY - 2, W + 4, 4);
+        ctx.fillStyle = `rgba(255,255,255,${core * 0.8 * a})`;
+        ctx.fillRect(0, seamY - 0.5, W, 1);
     }
 
     // ---- Signal-loss sequence renderers ----------------------------------

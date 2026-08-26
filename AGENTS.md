@@ -24,9 +24,9 @@ real CRT/VHS TV and grows into an interactive "Friends Channels" hub.
 
 ## Current state
 - Phase 1 done; Phase 4 (Friends Channels hub) done; **Phase 2 (deepen authenticity) in progress**
-  (item 1 = VCR OSD Mono font swap, done; item 2 = VHS tracking band, done; item 3 = signal-loss sequence, done; items 4-5 open).
+  (item 1 = VCR OSD Mono font swap, done; item 2 = VHS tracking band, done; item 3 = signal-loss sequence, done; item 4 = phosphor warm-up, done; item 5 open).
   - Demo channel list inlined in `crt-tv.js` `CHANNELS` (no `friends.json` yet): peeshaaaa, itzdribz, bessvibes, sery_bot (blue, live test), nightowl (blue), retrocat.
-- Recommended next step: `DESIGN.md` Phase 2 item 4 — **phosphor warm-up fade-in on load**.
+- Recommended next step: `DESIGN.md` Phase 2 item 5 — **audio-reactive option** (deferred).
 
 ## How to verify changes
 - **Syntax check:** `node --check crt-tv.js`

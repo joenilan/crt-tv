@@ -61,7 +61,7 @@
 - [x] **Font swap** to `VCR OSD Mono` (self-hosted `@font-face` in `fonts/`, `VT323` web fallback)
 - [x] VHS **tracking band** becomes a real wobble + snow column that snaps back on drag
 - [x] **Signal-loss sequence** (TV off → blue → rolling snow → dead static) via `CrtTV.transition('signalLoss')`
-- [ ] **Phosphor warm-up** fade-in on load
+- [x] **Phosphor warm-up** (classic CRT convergence: thin bright vertical seam → opens up vertically into the blue screen, cool-white bloom core that fades to the warm blue glow)
 - [ ] **Audio-reactive** option (optional, OBS browser source mic capture is tricky — defer)
 
 ### Phase 3 — Glitch Library (modern era)
@@ -174,7 +174,7 @@ media → shows the Technical Difficulties color-bars screen. 100% offline-capab
 - **Demo channel list:** `CHANNELS` in `crt-tv.js` is inlined (no `friends.json` yet) with
   6 example streamers: `peeshaaaa` (blue), `itzdribz` (offline), `bessvibes` (blue),
   `sery_bot` (blue — used as the live test channel), `nightowl` (blue), `retrocat` (offline).
-- **Next step recommended:** **Phase 2, item 4** = phosphor warm-up fade-in on load.
+- **Next step recommended:** **Phase 2, item 5** = audio-reactive option (deferred; OBS browser-source mic capture is tricky).
 - Windows-only gotchas: use native `E:\` paths; background servers hang the Bash tool —
   use `Start-Process -PassThru` (or `Start-Process python ... -WindowStyle Hidden`)
   and kill by PID. `file://` and OBS browser source need an HTTP server.
