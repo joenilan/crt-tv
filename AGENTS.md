@@ -34,7 +34,12 @@ real CRT/VHS TV and grows into an interactive "Friends Channels" hub.
     - Local `<video>` drawn to canvas via `drawImage`; remote `<iframe>` via DOM overlay in `#media`.
     - OFFLINE fallback on media load failure (color bars).
     - Test clips in `media/test.mp4` and `media/test.webm`.
-- Recommended next step: `DESIGN.md` Phase 6 = Polish (bezel/transport buttons, README, zip package).
+- Phase 6 (Polish) — **done**.
+    - VCR transport buttons (PLAY, PAUSE, STOP, REWIND, FAST FORWARD, EJECT) with brand styling.
+    - Presets saved to localStorage (channelIndex, tracking position).
+    - README.md with OBS setup instructions.
+    - build.mjs for creating zip package.
+- **All phases complete!** The widget is feature-complete and ready for OBS use.
 
 ## How to verify changes
 - **Syntax check:** `node --check crt-tv.js`

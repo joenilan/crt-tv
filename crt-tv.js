@@ -147,6 +147,7 @@
         STATE.t = 0;
         swapStaticUntil = performance.now() + 150; // gate static gap in loop
         if (CHANNELS[index].media === null) tone(1000, 0.6); // "tune" click on offline
+        savePreset();
     }
     let swapStaticUntil = 0;
 
@@ -538,6 +539,7 @@
         // integrate tracking spring back to center when not dragging
         if (!dragging) applyTracking(dt);
         const locked = STATE.tracking;
+        savePreset(); // track position changes
 
         const channel = CHANNELS[channelIndex];
         const live = channel.media !== null;
@@ -627,8 +629,76 @@
         trackingTarget = 0; // snap back: spring pulls tracking toward 0
     });
 
+    // ---- Presets (localStorage) ----------------------------------------
+    const STORAGE_KEY = 'crt-tv-presets';
+    function loadPreset() {
+        try {
+            const p = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (p && typeof p.channelIndex === 'number') {
+                channelIndex = clamp(p.channelIndex, 0, CHANNELS.length - 1);
+                mediaIndex = channelIndex;
+            }
+            if (p && typeof p.tracking === 'number') {
+                STATE.tracking = clamp(p.tracking, -1, 1);
+            }
+        } catch (e) {}
+    }
+    function savePreset() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                channelIndex,
+                tracking: STATE.tracking,
+            }));
+        } catch (e) {}
+    }
+
+    // ---- Transport controls --------------------------------------------
+    function setupTransport() {
+        const buttons = document.querySelectorAll('.btn[data-action]');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+                if (action === 'play') {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    // resume any paused media
+                    if (mediaVideo.ref) {
+                        try { mediaVideo.ref.play(); } catch (e) {}
+                    }
+                } else if (action === 'pause') {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    if (mediaVideo.ref) {
+                        try { mediaVideo.ref.pause(); } catch (e) {}
+                    }
+                } else if (action === 'stop') {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    if (mediaVideo.ref) {
+                        try {
+                            mediaVideo.ref.pause();
+                            mediaVideo.ref.currentTime = 0;
+                        } catch (e) {}
+                    }
+                } else if (action === 'eject') {
+                    destroyMedia();
+                    mediaIndex = -1;
+                    buttons.forEach(b => b.classList.remove('active'));
+                } else if (action === 'rewind' || action === 'fastforward') {
+                    // visual feedback only (VCR transport FX)
+                    if (mediaVideo.ref) {
+                        try { mediaVideo.ref.playbackRate = action === 'rewind' ? -2 : 2; } catch (e) {}
+                    }
+                }
+            });
+        });
+        // default to play state
+        document.querySelector('[data-action="play"]').classList.add('active');
+    }
+
     // ---- Init ------------------------------------------------------------
     buildGrid();
+    loadPreset();
+    setupTransport();
 
     // expose a tiny API for OBS JS triggers / future automation
     window.CrtTV = {

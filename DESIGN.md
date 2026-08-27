@@ -102,11 +102,11 @@
 - [x] **"Offline" is purely local:** a channel is OFFLINE iff it has NO playable media.
        No live-detection API, no network, no tokens. See §6.
 
-### Phase 6 — Polish
-- [ ] Bezel/brand styling → full **VCR unit** with real transport buttons + speaker grille
-- [ ] Presets saved per "source mode"
-- [ ] README + OBS setup instructions
-- [ ] Zip package `crt-tv.zip` for easy OBS import
+### Phase 6 — Polish (DONE)
+- [x] Bezel/brand styling → full **VCR unit** with real transport buttons + speaker grille
+- [x] Presets saved per "source mode" (localStorage: channelIndex, tracking)
+- [x] README + OBS setup instructions
+- [x] Zip package `crt-tv.zip` for easy OBS import (build.mjs)
 
 ---
 

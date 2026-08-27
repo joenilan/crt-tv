@@ -130,6 +130,125 @@
             border-radius: 2px;
         }
 
+        /* VCR transport panel below the screen */
+        #panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 14vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 3vw;
+            background: linear-gradient(to bottom, #1a1c22 0%, #111218 100%);
+            border-top: 1px solid #2a2c34;
+        }
+        .brand {
+            font-family: 'VCR OSD Mono', 'VT323', monospace;
+            font-size: 2.8vh;
+            color: #57ff8f;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(87,255,143,0.5);
+        }
+        .brand span {
+            color: #ffb24d;
+            font-size: 2vh;
+            margin-left: 8px;
+        }
+        .transport {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .btn {
+            background: #1a1c22;
+            border: 1px solid #3a3c44;
+            border-radius: 4px;
+            color: #bfe6ff;
+            font-family: 'VCR OSD Mono', 'VT323', monospace;
+            font-size: 1.6vh;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: all 80ms ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .btn:hover {
+            background: #2a3040;
+            border-color: #57ff8f;
+            color: #57ff8f;
+        }
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .btn.active {
+            background: #57ff8f;
+            color: #0a0d12;
+            border-color: #57ff8f;
+        }
+        /* cassette slot indicator */
+        #slot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8vw;
+            height: 3vh;
+            background: linear-gradient(to bottom, #0a0c10 0%, #151720 100%);
+            border: 1px solid #2a2c34;
+            border-radius: 2px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        #slot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6vw;
+            height: 1vh;
+            background: #000;
+            border-radius: 1px;
+        }
+        /* power LED */
+        #led {
+            position: absolute;
+            top: 2vh;
+            right: 3vw;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff4d4d 0%, #8b0000 100%);
+            box-shadow: 0 0 6px rgba(255,77,77,0.5);
+        }
+        #led.on {
+            background: radial-gradient(circle at 30% 30%, #57ff8f 0%, #00aa44 100%);
+            box-shadow: 0 0 8px rgba(87,255,143,0.8);
+        }
+        /* volume knob */
+        #knob {
+            position: absolute;
+            bottom: 20vh;
+            right: 3vw;
+            width: 3vh;
+            height: 3vh;
+            border-radius: 50%;
+            background: conic-gradient(#3a3c44 0%, #1a1c22 50%, #3a3c44 100%);
+            border: 2px solid #5a5c64;
+            cursor: pointer;
+        }
+        #knob::after {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40%;
+            background: #57ff8f;
+        }
+
         /* channel-swap white flash overlay */
         #flash {
             position: absolute;
@@ -216,8 +335,22 @@
                 <div id="vignette"></div>
                 <div id="reflection"></div>
             </div>
+            <div id="slot"></div>
+            <div id="led" class="on"></div>
+            <div id="knob"></div>
             <div class="grille l"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
             <div class="grille r"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div id="panel">
+                <div class="brand">VCR-OSD <span>2000</span></div>
+                <div class="transport">
+                    <button class="btn" data-action="rewind" aria-label="Rewind">⏪</button>
+                    <button class="btn" data-action="play" aria-label="Play">▶</button>
+                    <button class="btn" data-action="pause" aria-label="Pause">❚❚</button>
+                    <button class="btn" data-action="stop" aria-label="Stop">⏹</button>
+                    <button class="btn" data-action="fastforward" aria-label="Fast Forward">⏩</button>
+                    <button class="btn" data-action="eject" aria-label="Eject">⏏</button>
+                </div>
+            </div>
         </div>
     </div>
     <script src="glitches.js"></script>
