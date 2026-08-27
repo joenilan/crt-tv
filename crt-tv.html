@@ -79,6 +79,22 @@
             height: 100%;
             display: block;
         }
+        /* remote embed (<iframe>) sits above the canvas but behind the grid,
+           flash, vignette and reflection overlays (see Phase 5) */
+        #media {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            overflow: hidden;
+            background: #000;
+        }
+        #media iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
         /* CRT glass curvature + curvature of the scanline glow handled in canvas;
            these overlays add the final vignette and a faint reflection */
         #vignette {
@@ -194,6 +210,7 @@
         <div id="bezel">
             <div id="well">
                 <canvas id="screen"></canvas>
+                <div id="media"></div>
                 <div id="grid"></div>
                 <div id="flash"></div>
                 <div id="vignette"></div>

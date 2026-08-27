@@ -27,20 +27,22 @@
 
     const flash = document.getElementById('flash');
     const gridEl = document.getElementById('grid');
+    const mediaWrap = document.getElementById('media');
     const well = document.getElementById('well');
 
     // ---- Channels --------------------------------------------------------
     // Each channel: { id, name, handle, media }
     //   media = null            -> OFFLINE (Technical Difficulties)
     //   media = { type: 'blue' }-> LIVE, blue broadcast test pattern
-    //   media = { type: 'local', src } -> LIVE, local mp4/webm (Phase 5)
-    //   media = { type: 'embed', url }  -> LIVE, remote iframe (Phase 5)
+    //   media = { type: 'local', src } -> LIVE, local mp4/webm drawn in the well
+    //   media = { type: 'embed', url }  -> LIVE, remote iframe overlay (Phase 5)
+    // A local media file that fails to load is treated as OFFLINE (see injectMedia).
     const CHANNELS = [
         { id: 'peeshaaaa',   name: 'peeshaaaa',   handle: '@peeshaaaa',   media: { type: 'blue' } },
         { id: 'itzdribz',    name: 'itzdribz',    handle: '@itzdribz',    media: null },
         { id: 'bessvibes',   name: 'bessvibes',   handle: '@bessvibes',   media: { type: 'blue' } },
-        { id: 'sery_bot',    name: 'sery_bot',    handle: '@sery_bot',    media: { type: 'blue' } },
-        { id: 'nightowl',    name: 'nightowl',    handle: '@nightowl',    media: { type: 'blue' } },
+        { id: 'sery_bot',    name: 'sery_bot',    handle: '@sery_bot',    media: { type: 'local', src: './media/test.mp4' } },
+        { id: 'nightowl',    name: 'nightowl',    handle: '@nightowl',    media: { type: 'local', src: './media/test.webm' } },
         { id: 'retrocat',    name: 'retrocat',    handle: '@retrocat',    media: null },
     ];
 
@@ -141,6 +143,7 @@
         beep(620 + dir * 120, 0.05);
 
         channelIndex = index;
+        mediaIndex = -1;  // force inject on next locked frame
         STATE.t = 0;
         swapStaticUntil = performance.now() + 150; // gate static gap in loop
         if (CHANNELS[index].media === null) tone(1000, 0.6); // "tune" click on offline
@@ -149,6 +152,84 @@
 
     function goUp() { swapChannel(channelIndex + 1); }
     function goDown() { swapChannel(channelIndex - 1); }
+
+    // ---- Media inside the well (Phase 5) --------------------------------
+    // LIVE channels carry media to show in the CRT well:
+    //   media = { type: 'local', src } -> local <video> drawn to the canvas
+    //                                      (offline, same-origin files)
+    //   media = { type: 'embed', url } -> <iframe> overlay (remote embed)
+    // A media channel that fails to load is treated as OFFLINE -> Technical
+    // Difficulties color bars. Offline still means "no playable media" — no
+    // live detection, no network dependency for the local path.
+    let mediaEl = null;
+    let mediaIndex = -1;
+    const mediaVideo = { ref: null };
+
+    function destroyMedia() {
+        if (mediaEl && mediaEl.remove) mediaEl.remove();
+        if (mediaVideo.ref) {
+            try { mediaVideo.ref.pause(); } catch (e) {}
+            try { if (mediaVideo.ref.parentNode) mediaVideo.ref.parentNode.removeChild(mediaVideo.ref); } catch (e) {}
+            try { mediaVideo.ref.removeAttribute('src'); mediaVideo.ref.load(); } catch (e) {}
+        }
+        mediaEl = null;
+        mediaVideo.ref = null;
+        ctx._mediaVideo = null;
+    }
+
+    function injectMedia(channel) {
+        destroyMedia();
+        if (!channel || channel.media === null) return;
+        const m = channel.media;
+        if (m.type === 'local') {
+            // Local video: kept offscreen and drawn to the canvas each frame so
+            // scanlines / vignette still read on top. Muted so autoplay works
+            // without a user gesture (OBS policy).
+            const v = document.createElement('video');
+            v.src = m.src;
+            v.muted = true;
+            v.autoplay = true;
+            v.loop = true;
+            v.playsInline = true;
+            v.preload = 'auto';
+            mediaVideo.ref = v;
+            ctx._mediaVideo = v;
+            // Append so it actually loads/plays (a detached <video> won't).
+            // Hidden off-screen; we only read frames into the canvas.
+            v.style.position = 'absolute';
+            v.style.left = '-10000px';
+            v.style.top = '-10000px';
+            v.style.visibility = 'hidden';
+            v.style.width = '1px';
+            v.style.height = '1px';
+            if (well) well.appendChild(v);
+            v.addEventListener('error', () => {
+                // No playable media -> OFFLINE (graceful fallback).
+                channel.media = null;
+                destroyMedia();
+            });
+        } else if (m.type === 'embed' && mediaWrap) {
+            // Remote embed: cannot be drawn to a canvas (CORS/tainted), so it
+            // lives as a DOM <iframe> in the media overlay.
+            const f = document.createElement('iframe');
+            f.src = m.url;
+            f.setAttribute('frameborder', '0');
+            mediaWrap.appendChild(f);
+            mediaEl = mediaWrap;
+        }
+    }
+
+    function drawMedia() {
+        const v = ctx._mediaVideo;
+        if (!v || v.readyState < 2) return; // HAVE_CURRENT_DATA or higher
+        const ar = v.videoWidth / (v.videoHeight || 1);
+        const targetAr = W / H;
+        let dw, dh, dx, dy;
+        if (ar > targetAr) { dh = H; dw = Math.round(H * ar); }
+        else { dw = W; dh = Math.round(W / ar); }
+        dx = (W - dw) / 2; dy = (H - dh) / 2;
+        ctx.drawImage(v, dx, dy, dw, dh);
+    }
 
     // ---- Content renderers -----------------------------------------------
     // Blue broadcast test pattern (the "on air" glow)
@@ -461,6 +542,12 @@
         const channel = CHANNELS[channelIndex];
         const live = channel.media !== null;
 
+        // (re)inject media when the channel changes
+        if (channelIndex !== mediaIndex) {
+            injectMedia(channel);
+            mediaIndex = channelIndex;
+        }
+
         if (performance.now() < swapStaticUntil) {
             drawStatic(1);
             drawTrackingWobble();
@@ -469,8 +556,9 @@
         } else if (channel.media.type === 'blue') {
             drawBlue();
         } else {
-            // local / embed media handled by injected DOM (see below)
+            // local/embed media: blue broadcast behind, media on top
             drawBlue();
+            drawMedia();
         }
 
         // real VHS tracking band: snow that rolls with a gentle wobble and,

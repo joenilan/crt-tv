@@ -16,20 +16,25 @@ real CRT/VHS TV and grows into an interactive "Friends Channels" hub.
 |------|---------|
 | `DESIGN.md` | Design, milestones, locked decisions, handoff notes — read before editing |
 | `crt-tv.html` | Structure: bezel, well, screen canvas, grille, vignette/reflection CSS |
-| `crt-tv.js` | Canvas renderer: blue screen, scanlines, roll/tracking, OSD, transport |
-| `render.mjs` | Playwright render -> `renders/` (starts a local HTTP server, takes a screenshot) |
+| `crt-tv.js` | Canvas renderer: blue screen, scanlines, roll/tracking, OSD, transport, media subsystem |
+| `render.mjs` | Playwright render -> `renders/` (supports `--channel` flag for media testing) |
 | `glitches.js` | Modern-era glitch library (`window.__Glitches`): pixelate/datamash/tear/buffer/downshift + scheduler |
 | `diag.mjs` | Diagnostic probe |
 | `renders/` | Generated screenshot references (regenerate, do not hand-edit) |
+| `media/` | Demo media clips (regenerate with ffmpeg if needed) |
 | `baseline_fontswap.png` | Font-swap visual reference |
 
 ## Current state
 - Phase 1 done; Phase 2 (deepen authenticity) done (item 1 font swap, item 2 VHS tracking band,
    item 3 signal-loss sequence, item 4 phosphor warm-up done; item 5 audio-reactive deferred).
    **Phase 3 (Glitch Library) done** — `glitches.js` + `CrtTV.transition` glitch kinds wired.
-- Phase 4 (Friends Channels hub) — **not yet started** (see `DESIGN.md`).
-   - Demo channel list inlined in `crt-tv.js` `CHANNELS` (no `friends.json` yet): peeshaaaa, itzdribz, bessvibes, sery_bot (blue, live test), nightowl (blue), retrocat.
-   - Recommended next step: `DESIGN.md` Phase 4 = Friends Channels hub.
+- Phase 4 (Friends Channels hub) — **done** (see `DESIGN.md`).
+    - Demo channel list inlined in `crt-tv.js` `CHANNELS`: peeshaaaa, itzdribz, bessvibes, sery_bot (LIVE/mp4), nightowl (LIVE/webm), retrocat.
+- Phase 5 (Embed/Media inside the Well) — **done**.
+    - Local `<video>` drawn to canvas via `drawImage`; remote `<iframe>` via DOM overlay in `#media`.
+    - OFFLINE fallback on media load failure (color bars).
+    - Test clips in `media/test.mp4` and `media/test.webm`.
+- Recommended next step: `DESIGN.md` Phase 6 = Polish (bezel/transport buttons, README, zip package).
 
 ## How to verify changes
 - **Syntax check:** `node --check crt-tv.js`

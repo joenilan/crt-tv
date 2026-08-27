@@ -36,9 +36,11 @@
 |------|---------|
 | `crt-tv.html` | Structure: bezel, well, screen canvas, grille, CSS vignette/reflection |
 | `glitches.js` | Modern-era glitch library (`window.__Glitches`): pixelate/datamash/tear/buffer/downshift + scheduler |
-| `crt-tv.js`   | Canvas renderer: blue screen, scanlines, roll/tracking, OSD, transport, glitch overlay, `CrtTV.transition` |
+| `crt-tv.js`   | Canvas renderer: blue screen, scanlines, roll/tracking, OSD, transport, glitch overlay, media subsystem (`injectMedia`/`drawMedia`/`destroyMedia`), `CrtTV.transition` |
 | `_preview.png`| Playwright screenshot reference (do not commit as source of truth) |
 | `DESIGN.md`   | This doc |
+| `render.mjs`  | Playwright render script (with `--channel` flag) |
+| `media/`      | Demo media clips (`test.mp4`, `test.webm`) |
 
 **Current state:** Phase 1 done. Center pixel confirmed rendered blue `(35,70,114)`.
 
@@ -94,11 +96,11 @@
 - [ ] **"Watch with my chat"** wiring: selecting a live friend routes that friend's
       stream/chat into the TV (see Phase 5 integration)
 
-### Phase 5 — Embed / Media Inside the Well (OPTIONAL)
-- [ ] Show embed (`<iframe>`) or local `<video>` inside the CRT well for `LIVE` channels
-- [ ] Graceful fallback if media fails to load (→ treat as OFFLINE)
-- [ ] **"Offline" is purely local:** a channel is OFFLINE iff it has NO playable media.
-      No live-detection API, no network, no tokens. See §6.
+### Phase 5 — Embed / Media Inside the Well (DONE)
+- [x] Show embed (`<iframe>`) or local `<video>` inside the CRT well for `LIVE` channels
+- [x] Graceful fallback if media fails to load (→ treat as OFFLINE)
+- [x] **"Offline" is purely local:** a channel is OFFLINE iff it has NO playable media.
+       No live-detection API, no network, no tokens. See §6.
 
 ### Phase 6 — Polish
 - [ ] Bezel/brand styling → full **VCR unit** with real transport buttons + speaker grille
